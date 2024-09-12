@@ -1,0 +1,50 @@
+version: '3.7'
+# hacked example found on web
+# I configured it to run on linux
+# later figured you dont setup gitlab-runner in the docker-compose that way
+#
+# comes up fine on port 8080
+# but
+# you have to be ready to integrate with a mail service
+# before registering any accounts
+#
+# generally gitlab-ce used to permit simple username/password on the instance
+#
+# the simple/legacy container registry runs on port 5050 by default and must be configured https
+#
+services:
+  web:
+    image: 'docker01mxlinux.acme.local:5000/gitlab/gitlab-ce:17.2.4-ce.0'
+    restart: always
+    hostname: 'gitlab-ce'
+    container_name: gitlab-ce
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://docker01mxlinux'
+        gitlab_rails["gitlab_shell_ssh_port"] = 2224
+    ports:
+      - '8929:80'
+      - '2224:22'
+#      - '8443:443'
+      - '5050:5050'
+    volumes:
+      - '$GITLAB_HOME/config:/etc/gitlab'
+      - '$GITLAB_HOME/logs:/var/log/gitlab'
+      - '$GITLAB_HOME/data:/var/opt/gitlab'
+    networks:
+      - gitlab
+#  gitlab-runner:
+#    image: 'docker01mxlinux.acme.local:5000/gitlab/gitlab-runner:alpine'
+#    container_name: gitlab-runner    
+#    restart: always
+#    depends_on:
+#      - web
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - '$GITLAB_HOME/gitlab-runner:/etc/gitlab-runner'
+#    networks:
+#      - gitlab
+
+networks:
+  gitlab:
+    name: gitlab-network
